@@ -4,6 +4,8 @@ Create archives, extract files from archive, list files inside archives - using 
 
 Library by Henri Gourvest updated to newer 7-zip.
 
+Version 1.3
+
 ## About
 
 This API use the 7-zip dll (7z.dll) to read and write all 7-zip supported archive formats.  According to the documentation, file formats listed below are supported, although many may only support decompression/extraction and not creation/compression.
@@ -51,6 +53,33 @@ This API use the 7-zip dll (7z.dll) to read and write all 7-zip supported archiv
  - tar
  - gzip
 
+## Detecting format
+```pascal
+var i: Integer;
+    Guid: TGuid;
+    Filename: String;
+begin
+  if not OpenDialog1.Execute then Exit;
+
+  Filename := OpenDialog1.Filename;
+
+  Guid := DetectFormat(Filename);
+  if IsEqualGUID(Guid, CLSID_CFormat_Unsupported) then begin
+    ShowMessage('Unsupported');
+    Exit;
+  end;
+
+  with CreateInArchive(Guid) do begin
+   OpenFile(Filename);
+   for i := 0 to NumberOfItems - 1 do
+    if not ItemIsFolder[i] then
+      Memo1.Lines.Add(
+        ItemPath[i] + ' == ' + GetItemCRC(i) +
+        ItemComment[i] +IntToStr(GetItemPackSize(i)) + ' ' +
+        FormatDateTime('YYYY-MM-DD', GetItemModDate(i))
+        );
+  end;
+  ```
   
 ## Reading archive:
 ### Extract to path:
